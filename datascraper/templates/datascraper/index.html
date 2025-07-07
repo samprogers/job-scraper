@@ -1,0 +1,20 @@
+{% extends "datascraper/base.html" %}
+{% load static %}
+
+{% block title %}
+ {{ title }}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+        {% for job in jobs %}
+            <div class="company">
+                <h3></h3>
+
+                    <div class="job">
+                        {{job.company }} - <a data-id="{{job.vendor_job_id}}" href="{{ job.url}}" target="_blank">{{ job.title }} [{{job.published_at}}] </a>
+                    </div>
+            </div>
+        {% endfor %}
+</div>
+{% endblock %}

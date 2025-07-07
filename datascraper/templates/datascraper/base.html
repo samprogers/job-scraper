@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="{% static 'ui/favicon.ico' %}">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="{% static 'ui/sitemap.xml' %}">
+    <link rel="canonical" href="https://{{ host }}">
+    <meta name="robots" content="all">
+    <meta name="description" content="{{ description }}">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta property="og:title" content="{{ title }}">
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="{{ description }}">
+    <meta property="og:site_name" content="Free QR Code Generator">
+    <meta property="og:image" content="{% static 'ui/favicon.ico' %}">
+    <meta property="og:logo" content="{% static 'ui/favicon.ico' %}">
+    <meta property="og:url" content="https://{{ host }}">
+
+    <link rel="stylesheet" href="{% static 'ui/base.css' %}">
+    <link rel="stylesheet" href="{% static 'ui/footer.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    {% block styles %}
+    {% endblock %}
+    <title>
+        {% block title %}
+        {% endblock %}
+    </title>
+  </head>
+  <body>
+    <header>
+      <h1>Job Aggregator</h1>
+    </header>
+    {% block content %}
+    {% endblock %}
+  </body>
+</html>

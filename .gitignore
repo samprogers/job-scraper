@@ -1,0 +1,4 @@
+elastic-start-local/.env
+db.sqlite3
+.env
+.venv

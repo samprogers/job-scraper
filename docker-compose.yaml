@@ -1,0 +1,19 @@
+---
+version: "3"
+networks:
+  elastic:
+    external: true
+services:
+  python:
+    networks:
+      - elastic
+    build: .
+    tty: true
+    container_name: job-scraper
+    environment:
+      - DEBUG=True
+    volumes:
+      - .:/var/task/job-scraper:delegated
+    ports:
+      - "8000:8000"
+
