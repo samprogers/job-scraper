@@ -1,4 +1,5 @@
 import requests
+from django.conf import settings
 from datascraper.models import Vendor, State
 import dateutil, math, time, sys, json
 from concurrent.futures import ThreadPoolExecutor
@@ -10,6 +11,8 @@ class AdzunaApi:
 
     vendor = None
     thread_counter = 0
+    api_key = settings.ADZUNA_API_KEY
+    client_id = settings.ADZUNA_API_CLIENT_ID
 
     def __init__(self):
         self.vendor = Vendor.objects.get(slug='adzuna')
@@ -83,8 +86,7 @@ class AdzunaApi:
         api_responses = []
         threading = HttpThreading(3, 2, 30)
 
-
-        first_url = f"https://api.adzuna.com/v1/api/jobs/us/search/{pg}?app_id=e52c7895&app_key=488c4bc623d5271dd8af90c1ba682e7f&content-type=application/json&results_per_page=100&what={qry}&full_time=1&where=united+states"
+        first_url = f"https://api.adzuna.com/v1/api/jobs/us/search/{pg}?app_id={self.client_id}&app_key={self.api_key}&content-type=application/json&results_per_page=100&what={qry}&full_time=1&where=united+states"
         all_urls.append(first_url)
 
         rsp = requests.get(first_url).json()
@@ -93,10 +95,9 @@ class AdzunaApi:
             pages = math.ceil(rsp["count"] / 100)
 
             for pg in range(1, pages):
-                url = f"https://api.adzuna.com/v1/api/jobs/us/search/{pg}?app_id=e52c7895&app_key=488c4bc623d5271dd8af90c1ba682e7f&content-type=application/json&results_per_page=100&what={qry}&full_time=1&where=united+states"
+                url = f"https://api.adzuna.com/v1/api/jobs/us/search/{pg}?app_id={self.client_id}&app_key={self.api_key}&content-type=application/json&results_per_page=100&what={qry}&full_time=1&where=united+states"
                 all_urls.append(url)
 
-        print(all_urls)
         #get all url responses
         all_jobs = []
 
