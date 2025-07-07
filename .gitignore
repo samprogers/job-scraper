@@ -1,5 +1,6 @@
 *.pyc
 elastic-start-local/.env
+requirements.txt
 db.sqlite3
 .env
 .venv
