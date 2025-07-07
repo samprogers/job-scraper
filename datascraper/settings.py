@@ -129,6 +129,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SEARCH_API_KEY = os.getenv("SEARCH_API_KEY", "API_KEY")
 USAJOBS_API_KEY = os.getenv("USAJOBS_API_KEY", "API_KEY")
+ADZUNA_API_KEY = os.getenv("ADZUNA_API_KEY", "API_KEY")
+ADZUNA_API_CLIENT_ID = os.getenv("ADZUNA_API_CLIENT_ID", "API_KEY")
 USAJOBS_EMAIL_ADDRESS = os.getenv("USAJOBS_EMAIL_ADDRESS", "some_email@gmail.com")
 ELASTICSEARCH_DSL={
     'default': {
