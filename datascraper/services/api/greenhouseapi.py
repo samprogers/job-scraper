@@ -2,6 +2,7 @@ import requests
 from datascraper.models import Vendor, State
 import dateutil
 from datascraper.services.parser.countryparser import CountryParser
+from datascraper.util.formattedjobposting import FormattedJobPosting
 from bs4 import BeautifulSoup
 
 class GreenhouseApi:
@@ -53,20 +54,20 @@ class GreenhouseApi:
                         parsed_published_at = None
                     #datetime.datetime.strftime(parsed_published_at, "%Y-%m-%dT%H:%M:%S")
 
-                    formatted = {
-                        "url": job["absolute_url"],
-                        "title": title,
-                        "description": content,
-                        "company": {"name": company.name, "slug": company.slug},
-                        "vendor": self.vendor,
-                        "location": location,
-                        "vendor_job_id": vendor_job_id,
-                        "published_at": parsed_published_at,
-                        "is_usa": is_usa,
-                        "is_remote": is_remote,
-                        "is_hybrid": is_hybrid,
-                        "state": state
-                    }
+                    formatted = FormattedJobPosting(
+                        url=job["absolute_url"],
+                        title=title,
+                        description=content,
+                        vendor_job_id=vendor_job_id,
+                        company={"name": company.name, "slug": company.slug},
+                        location=location,
+                        vendor=self.vendor,
+                        published_at=parsed_published_at,
+                        state=state,
+                        is_usa=is_usa,
+                        is_hybrid=is_hybrid,
+                        is_remote=is_remote
+                    )
 
                     if is_usa or is_remote:
                         jobs.append(formatted)

@@ -1,10 +1,11 @@
 import requests
 from django.conf import settings
 from datascraper.models import Vendor, State
-import dateutil, math, time, sys, json
+import dateutil, math, time, sys, json, dateparser
 from concurrent.futures import ThreadPoolExecutor
 from datascraper.services.http.httpthreading import HttpThreading
 from datascraper.services.parser.countryparser import CountryParser
+from datascraper.util.formattedjobposting import FormattedJobPosting
 from bs4 import BeautifulSoup
 
 class AdzunaApi:
@@ -45,19 +46,23 @@ class AdzunaApi:
             is_usa = True
             is_remote = True if  parser.isRemote(json.dumps(location)) or parser.isRemote(title) else False
 
-            formatted = {
-                "url": url,
-                "title": title,
-                "company": {"name": company_name, "slug": company_name.lower() },
-                "vendor": self.vendor,
-                "location": location,
-                "vendor_job_id": vendor_job_id,
-                "published_at": dateutil.parser.parse(published_at),
-                'description': description,
-                "state": state,
-                'is_usa': is_usa,
-                'is_remote': is_remote
-            }
+            if published_at is not None:
+                published_at = dateparser.parse(published_at)
+                published_at = published_at.strftime("%Y-%m-%d")
+
+            formatted = FormattedJobPosting(
+                url=url,
+                title=title,
+                description=description,
+                vendor_job_id=vendor_job_id,
+                company={"name": company_name, "slug": company_name.lower()},
+                location=location,
+                vendor=self.vendor,
+                published_at=published_at,
+                state=state,
+                is_usa=is_usa,
+                is_remote=is_remote,
+            )
             jobs.append(formatted)
 
         return jobs
@@ -85,6 +90,7 @@ class AdzunaApi:
         all_urls = []
         api_responses = []
         threading = HttpThreading(3, 2, 30)
+        print(qry)
 
         first_url = f"https://api.adzuna.com/v1/api/jobs/us/search/{pg}?app_id={self.client_id}&app_key={self.api_key}&content-type=application/json&results_per_page=100&what={qry}&full_time=1&where=united+states"
         all_urls.append(first_url)

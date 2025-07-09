@@ -4,6 +4,7 @@ import dateutil, json, dateparser, math, urllib, time, sys
 from bs4 import BeautifulSoup
 from datascraper.services.http.httpthreading import HttpThreading
 from datascraper.services.parser.countryparser import CountryParser
+from datascraper.util.formattedjobposting import FormattedJobPosting
 from functools import reduce
 
 
@@ -14,7 +15,7 @@ class MyWorkdayApi:
     def __init__(self):
         self.vendor = Vendor.objects.get(slug='myworkday')
 
-    def formatJob(self, company, parsed, tenant, job) -> dict:
+    def formatJob(self, company, parsed, tenant, job) -> FormattedJobPosting:
 
         parser = CountryParser()
         if "title" not in job.keys():
@@ -39,20 +40,20 @@ class MyWorkdayApi:
             print(published_at)
 
         print(f"{company.name} - {title} - {location}")
-        return {
-            "url": url,
-            "title": title,
-            "description": content,
-            "company": {"name": company.name, "slug": company.slug, "api_link": company.api_link},
-            "vendor": self.vendor,
-            "location": location,
-            "vendor_job_id": vendor_job_id,
-            "published_at": published_at,
-            "is_usa": is_usa,
-            "is_remote": is_remote,
-            "is_hybrid": parser.isRemote(location),
-            "state": state
-        }
+        return FormattedJobPosting(
+            url=url,
+            title=title,
+            description=content,
+            vendor_job_id=vendor_job_id,
+            company={"name": company.name, "slug": company.slug, "api_link": company.api_link},
+            location=location,
+            vendor=self.vendor,
+            published_at=published_at,
+            state=state,
+            is_usa=is_usa,
+            is_remote=is_remote,
+            is_hybrid=parser.isRemote(location)
+        )
 
 
     def getJobResponse(self, url, offset=0, locationKey="Location_Country", locationVal="bc33aa3152ec42d4995f4791a106ed09"):
