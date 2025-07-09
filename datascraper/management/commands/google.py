@@ -43,17 +43,16 @@ class Command(BaseCommand):
         ]
 
         search = CompanyGoogleSearch()
+        writer = JobPostingWriter()
         for query in company_queries:
             print(query['query'])
             vendor = Vendor.objects.get(id=query['vendor'])
             companies = search.getCompanies(query=query['query'])
             for company in companies:
                 print(company['name'])
-                self.writeCompany(company, vendor)
+                writer.writeCompany(company, vendor)
 
-       # return
         jobs = search.getJobs(job_queries)
-        writer = JobPostingWriter()
         writer.writeJobPostings(jobs)
         self.stdout.write(
             self.style.SUCCESS('Successfully ran google command')

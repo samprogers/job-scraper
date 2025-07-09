@@ -1,9 +1,12 @@
+import sys
+
 from django.conf import settings
 from serpapi import GoogleSearch
 import requests, urllib, dateparser
 from datascraper.services.parser.companyhtmlparser import CompanyHTMLParser
 from datascraper.models import Vendor
 from datascraper.services.parser.countryparser import CountryParser
+from datascraper.util.formattedjobposting import FormattedJobPosting
 
 class CompanyGoogleSearch:
 
@@ -64,7 +67,7 @@ class CompanyGoogleSearch:
                 for job in results.get("jobs_results", []):
                     vendor_job_id = job["job_id"]
                     title = job["title"]
-                    job_company = job["company_name"]
+                    job_company = job["company_name"] if job["company_name"] is not None else None
                     content = job["description"]
                     location = job["location"] if "location" in job.keys() else None
                     url = job["share_link"]
@@ -77,20 +80,19 @@ class CompanyGoogleSearch:
                         published_at = dateparser.parse(published_at)
                         published_at = published_at.strftime("%Y-%m-%d")
 
-                    formatted = {
-                        "url": url,
-                        "title": title,
-                        "description": content,
-                        "company": {"name": job_company, "slug": job_company},
-                        "vendor": self.vendor,
-                        "location": location,
-                        "vendor_job_id": vendor_job_id,
-                        #"programming_languages": ','.join(languages),
-                        "published_at": published_at,
-                        "state": state,
-                        'is_usa': is_usa,
-                        'is_remote': is_remote
-                    }
+                    formatted = FormattedJobPosting(
+                        url=url,
+                        title=title,
+                        description=content,
+                        vendor_job_id=vendor_job_id,
+                        company={"name": job_company, "slug": job_company},
+                        location=location,
+                        vendor=self.vendor,
+                        published_at=published_at,
+                        state=state,
+                        is_usa=is_usa,
+                        is_remote=is_remote,
+                    )
 
                     if is_usa:
                         jobs.append(formatted)

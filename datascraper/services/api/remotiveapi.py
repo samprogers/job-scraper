@@ -1,11 +1,8 @@
 import json, requests
-
-from pip._internal import locations
-
 from datascraper.models import Vendor
 import sys,datetime,dateutil
 from datascraper.services.parser.countryparser import CountryParser
-
+from datascraper.util.formattedjobposting import FormattedJobPosting
 
 class RemotiveApi:
 
@@ -38,21 +35,20 @@ class RemotiveApi:
                 continue
 
             state = parser.getState(location)
-            formatted = {
-                "url": url,
-                "title": title,
-                "company": {"slug": company_name, "name": company_name },
-                "vendor": self.vendor,
-                "location": location,
-                "vendor_job_id": vendor_job_id,
-                "programming_languages": ','.join(languages),
-                "published_at": dateutil.parser.parse(published_at),
-                'description': description,
-                'is_usa': is_usa,
-                'is_remote': is_remote,
-                'is_hybrid': parser.isHybrid(location) if location is not None else False,
-                'state': state
-            }
+            formatted = FormattedJobPosting(
+                url=url,
+                title=title,
+                description=description,
+                vendor_job_id=vendor_job_id,
+                company={"slug": company_name, "name": company_name },
+                location=location,
+                vendor=self.vendor,
+                published_at=dateutil.parser.parse(published_at),
+                state=state,
+                is_usa=is_usa,
+                is_remote=is_remote,
+                is_hybrid=parser.isHybrid(location) if location is not None else False
+            )
 
             jobs.append(formatted)
 

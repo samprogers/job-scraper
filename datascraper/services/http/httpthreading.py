@@ -29,10 +29,16 @@ class HttpThreading():
             if callable(self.current_callback):
                 self.current_callback(url)
 
-            print(rsp.status_code)
+
             self.last_responses[url] = rsp.text
             if rsp.status_code <= 299:
+                print(rsp.status_code)
                 return rsp.text
+            elif rsp.status_code == 429:
+                time.sleep(self.sleep_every)
+                rsp = requests.get(url)
+                print(rsp.status_code)
+                return rsp.text if rsp.status_code == 200 else None
             else:
                 return None
 
