@@ -11,7 +11,7 @@ class Command(BaseCommand):
         #Company.objects.search()
         now = datetime.datetime.now()
         nowfmt = now.strftime("%Y-%m-%d")
-        return Company.objects.raw(f"SELECT * FROM datascraper_company where api_link is not null and vendor_id = 5 and crawled_at < '2025-07-02' group by api_link order by slug asc ")
+        return Company.objects.raw(f"SELECT * FROM datascraper_company where api_link is not null and vendor_id = 5 and crawled_at < '2025-07-14' group by api_link order by slug asc ")
 
     def handle(self, *args, **options):
         api = MyWorkdayApi()

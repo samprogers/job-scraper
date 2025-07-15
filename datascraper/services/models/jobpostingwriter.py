@@ -47,12 +47,12 @@ class JobPostingWriter:
 
     def getJob(self, job: FormattedJobPosting):
 
-
         title = job.title
         vendor = job.vendor
         company_dict = job.company
         vendor_job_id = job.vendor_job_id
         state = job.state
+        skills = job.skills
 
         now = datetime.datetime.now()
         company = self.writeCompany(company_dict, vendor)
@@ -75,6 +75,9 @@ class JobPostingWriter:
                 is_remote=job.is_remote,
             )
 
+            if len(skills) >= 1:
+                new.setSkills(skills)
+
             if state is not None:
                 new.state = state
 
@@ -87,6 +90,7 @@ class JobPostingWriter:
                 return new, True, False
         else:
             posting = JobPosting.objects.get(vendor=vendor.id, company=company.id, title=title, vendor_job_id=vendor_job_id)
+            print(posting.id)
             posting.url = job.url
             posting.published_at = job.published_at
             posting.location = job.location
@@ -94,6 +98,9 @@ class JobPostingWriter:
             posting.company = company
             posting.is_usa = job.is_usa
             posting.is_remote = job.is_remote
+
+            if len(skills) >= 1:
+                posting.setSkills(skills)
 
             if state is not None:
                 posting.state = state

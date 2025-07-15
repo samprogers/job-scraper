@@ -1,12 +1,10 @@
 import requests
 from datascraper.models import Vendor
-import dateutil, json, dateparser, math, urllib, time, sys
+import dateutil, json, dateparser, math, urllib, time, sys, html
 from bs4 import BeautifulSoup
 from datascraper.services.http.httpthreading import HttpThreading
-from datascraper.services.parser.countryparser import CountryParser
+from datascraper.services.parser.stringextracter import StringExtracter
 from datascraper.util.formattedjobposting import FormattedJobPosting
-from functools import reduce
-
 
 class MyWorkdayApi:
 
@@ -17,7 +15,7 @@ class MyWorkdayApi:
 
     def formatJob(self, company, parsed, tenant, job) -> FormattedJobPosting:
 
-        parser = CountryParser()
+        parser = StringExtracter()
         if "title" not in job.keys():
             return None
 
@@ -31,6 +29,7 @@ class MyWorkdayApi:
         published_at = job['postedOn'].replace('Posted', '').replace('+',
                                                                      '').strip() if "postedOn" in job.keys() else None
         location = job['locationsText'] if "locationsText" in job.keys() else None
+
         is_remote = True if parser.isRemote(location) or parser.isRemote(title) else False
         is_usa = parser.isLocationInUSA(location) if location is not None else False
         state = parser.getState(location)
@@ -52,7 +51,8 @@ class MyWorkdayApi:
             state=state,
             is_usa=is_usa,
             is_remote=is_remote,
-            is_hybrid=parser.isRemote(location)
+            is_hybrid=parser.isRemote(location),
+            skills=[]
         )
 
 
@@ -137,6 +137,7 @@ class MyWorkdayApi:
         tenant = path_split[-1]
         parsed = urllib.parse.urlparse(api_link)
         threading = HttpThreading(10, 10, 15)
+        parser = StringExtracter()
 
         url = f"{parsed.scheme}://{parsed.netloc}/wday/cxs/{slug}/{tenant}/jobs"
         print(url)
@@ -159,11 +160,12 @@ class MyWorkdayApi:
         jobs = list(filter(lambda x: x is not None, jobs))
 
         #get all detail urls in parallel
-        detail_urls = [x['url'] for x in jobs if x is not None]
+        detail_urls = [x.url for x in jobs if x is not None]
         threading.executeGet(detail_urls)
 
         #update jobs with details strings
-        jobs = list(map(lambda j: (j.update({'description': threading.getLastResponse(j['url'])}), j)[1], jobs))
-        jobs = list(filter(lambda j: j['is_usa'] or j['is_remote'] is not None, jobs))
+        jobs = list(map(lambda j: (j.__dict__.update({'description': threading.getLastResponse(j.url)}), j)[1], jobs))
+        jobs = list(map(lambda j: (j.__dict__.update({'skills': parser.getSkills(j.description)}), j)[1], jobs))
+        jobs = list(filter(lambda j: j.is_usa or j.is_remote is not None, jobs))
         print(len(jobs))
         return jobs

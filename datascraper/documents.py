@@ -4,6 +4,7 @@ import sys
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 from .models import JobPosting, Company, Vendor
+import datetime
 
 @registry.register_document
 class JobPostingDocument(Document):
@@ -27,6 +28,7 @@ class JobPostingDocument(Document):
             'vendor_job_id',
             'title',
             'description',
+            'skills',
             'url',
             'published_at',
             'crawled_at',
@@ -42,18 +44,18 @@ class JobPostingDocument(Document):
             'vendor',
         )
 
+    def prepare_published_at(self, jobposting):
+        published_at = jobposting.published_at
+        ret = jobposting.published_at.strftime('%Y-%m-%d') if published_at is not None and published_at != "" else None
+        return ret
+
+    def prepare_skills(self, jobposting):
+        return jobposting.skills.split(',')
+
     def prepare_company_with_related(self, jobposting, related_to_ignore):
         if jobposting.company is not None and jobposting.company != related_to_ignore:
             return jobposting.company.slug
-            #return {
-            #    'name': jobposting.company.name,
-            #    'slug': jobposting.company.slug,
-            #}
 
     def prepare_vendor_with_related(self, jobposting, related_to_ignore):
         if jobposting.vendor is not None and jobposting.vendor != related_to_ignore:
             return jobposting.vendor.slug
-            #return {
-            #    'name': jobposting.vendor.name,
-            #    'slug': jobposting.vendor.slug,
-            #}

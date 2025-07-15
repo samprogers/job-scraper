@@ -7,7 +7,7 @@ from nltk import pos_tag, word_tokenize
 from datascraper.models import State, City
 import csv
 
-from datascraper.services.parser.countryparser import CountryParser
+from datascraper.services.parser.stringextracter import CountryParser
 import json
 
 class Command(BaseCommand):
