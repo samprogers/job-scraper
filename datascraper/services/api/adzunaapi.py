@@ -4,7 +4,7 @@ from datascraper.models import Vendor, State
 import dateutil, math, time, sys, json, dateparser
 from concurrent.futures import ThreadPoolExecutor
 from datascraper.services.http.httpthreading import HttpThreading
-from datascraper.services.parser.countryparser import CountryParser
+from datascraper.services.parser.stringextracter import StringExtracter
 from datascraper.util.formattedjobposting import FormattedJobPosting
 from bs4 import BeautifulSoup
 
@@ -21,7 +21,7 @@ class AdzunaApi:
 
 
     def getJobs(self, rsp):
-        parser = CountryParser()
+        parser = StringExtracter()
 
         if rsp is None:
             return []
@@ -89,11 +89,14 @@ class AdzunaApi:
         jobs = []
         all_urls = []
         api_responses = []
-        threading = HttpThreading(3, 2, 30)
+        api_threading = HttpThreading(3, 2, 30)
+        detail_threading = HttpThreading(5, 5, 10)
+        parser = StringExtracter()
         print(qry)
 
         first_url = f"https://api.adzuna.com/v1/api/jobs/us/search/{pg}?app_id={self.client_id}&app_key={self.api_key}&content-type=application/json&results_per_page=100&what={qry}&full_time=1&where=united+states"
         all_urls.append(first_url)
+        print(first_url)
 
         rsp = requests.get(first_url).json()
         if "count" in rsp.keys():
@@ -108,9 +111,21 @@ class AdzunaApi:
         all_jobs = []
 
         #get responses and build all_jobs list
-        threading.executeGet(all_urls)
-        responses = [threading.getLastResponse(url) for url in all_urls]
+        print(all_urls)
+        api_threading.executeGet(all_urls)
+        responses = [api_threading.getLastResponse(url) for url in all_urls]
         [ all_jobs.extend(self.getJobs(r)) for r in responses]
+
+        #get all detail urls
+        detail_urls = [j.url for j in all_jobs]
+        detail_threading.executeGet(detail_urls)
+
+        for j in all_jobs:
+            url = j.url
+            print(url)
+            j.description = detail_threading.getLastResponse(j.url)
+            print(len(j.description))
+            j.skills = parser.getSkills(j.description) if j.description is not None else []
 
         print("ALL JOBS!", len(all_jobs))
         return all_jobs

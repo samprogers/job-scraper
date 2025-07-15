@@ -1,7 +1,8 @@
-import sys, re
-from datascraper.models import State, City
+import sys, re, html
+from datascraper.models import State, City, Skill
 
-class CountryParser:
+
+class StringExtracter:
 
     def isRemote(self, location_string):
         return 'remote' in location_string.lower() if location_string is not None else False
@@ -9,6 +10,28 @@ class CountryParser:
     def isHybrid(self, location_string):
         return 'hybrid' in location_string.lower() if location_string is not None else False
 
+    def getSkills(self, text):
+        library_skills = []
+        exclude = ["R","C"]
+        skills = Skill.objects.all()
+        text = html.unescape(text)
+
+        all_skills = [x.name for x in skills]
+
+        #add to library_skills and format
+        [library_skills.extend(x.libraries.split(',')) for x in skills if x.libraries != '']
+        library_skills = [x.strip() for x in library_skills]
+        all_skills = all_skills + library_skills
+
+        escaped_skills = [f"{re.escape(lang)}" for lang in all_skills]
+        exclusion_pattern = ''.join([rf'(?!(?:{re.escape(ex)}\b))' for ex in exclude])
+        pattern = rf'(?<!\w){exclusion_pattern}({"|".join(escaped_skills)})(?!\w)'
+
+        flags = re.IGNORECASE
+        matches = re.findall(pattern, text, flags)
+
+        lower_matches = [x.lower() for x in matches]
+        return list(set(lower_matches))
 
     def getState(self, location_string):
 
@@ -37,7 +60,7 @@ class CountryParser:
         return None
 
     def isLocationInUSA(self, location_string: str) -> bool:
-        country_strings = ['United States', 'US', 'USA', 'United States of America', 'U.S', 'Anywhere', 'Northern America', 'Worldwide', 'Nationwide', 'Global']
+        country_strings = ['United States', 'US', 'USA', 'United States of America', 'U.S', 'Anywhere', 'Northern America', 'Worldwide', 'Nationwide', 'Global','North America']
 
         all_states = State.objects.all()
         abbreviations = [x.abbreviation for x in all_states]

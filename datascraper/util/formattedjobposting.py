@@ -6,6 +6,7 @@ class FormattedJobPosting:
         url: str=None,
         title: str=None,
         description: str = None,
+        skills: list=None,
         location: str=None,
         company: dict=None,
         vendor: Vendor=None,
@@ -23,6 +24,7 @@ class FormattedJobPosting:
         self.vendor_job_id = vendor_job_id
         self.published_at = published_at
         self.description = description
+        self.skills = skills if skills is not None else []
         self.location = location
         self.state = state
         self.is_usa = is_usa

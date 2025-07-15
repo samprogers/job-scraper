@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-import time, requests
+import time, requests, html
 
 class HttpThreading():
 
@@ -33,12 +33,12 @@ class HttpThreading():
             self.last_responses[url] = rsp.text
             if rsp.status_code <= 299:
                 print(rsp.status_code)
-                return rsp.text
+                return html.unescape(rsp.text)
             elif rsp.status_code == 429:
                 time.sleep(self.sleep_every)
                 rsp = requests.get(url)
                 print(rsp.status_code)
-                return rsp.text if rsp.status_code == 200 else None
+                return html.unescape(rsp.text) if rsp.status_code == 200 else None
             else:
                 return None
 

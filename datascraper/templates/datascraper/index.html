@@ -6,15 +6,124 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-        {% for job in jobs %}
-            <div class="company">
-                <h3></h3>
+{{ skills|json_script:"skills-whitelist" }}
+{{ states|json_script:"states-whitelist" }}
+<script>
 
-                    <div class="job">
-                        {{job.company }} - <a data-id="{{job.vendor_job_id}}" href="{{ job.url}}" target="_blank">{{ job.title }} [{{job.published_at}}] </a>
-                    </div>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const skillWhitelist = JSON.parse(
+      document.getElementById('skills-whitelist').textContent
+    );
+    const stateWhitelist = JSON.parse(
+      document.getElementById('states-whitelist').textContent
+    );
+    console.log(skillWhitelist);
+    console.log(stateWhitelist);
+
+    new Tagify(document.querySelector('#skills-input'), {
+      whitelist: skillWhitelist,
+      originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join(','),
+      dropdown: {
+        enabled: 1,          // show suggestions after 1 character
+        maxItems: 10,        // max items to show
+        fuzzySearch: true,   // smart search
+        position: 'auto',    // automatic dropdown placement
+        highlightFirst: true // highlight first matching item
+      }
+    });
+      new Tagify(document.querySelector('#ex-skills-input'), {
+      whitelist: skillWhitelist,
+      originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join(','),
+      dropdown: {
+        enabled: 1,          // show suggestions after 1 character
+        maxItems: 10,        // max items to show
+        fuzzySearch: true,   // smart search
+        position: 'auto',    // automatic dropdown placement
+        highlightFirst: true // highlight first matching item
+      }
+    });
+
+  new Tagify(document.querySelector('#states-input'), {
+      whitelist: stateWhitelist,
+      originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join(','),
+      enforceWhitelist: true,
+      dropdown: {
+        enabled: 1,          // show suggestions after 1 character
+        maxItems: 10,        // max items to show
+        fuzzySearch: true,   // smart search
+        position: 'auto',    // automatic dropdown placement
+        highlightFirst: true // highlight first matching item
+      }
+    });
+  });
+
+
+
+</script>
+
+
+<div class="search-container">
+  <!-- 🔍 Search Form -->
+  <form class="search-form">
+    <div class="form-row">
+      <label for="skills-input">Skills (include)</label>
+      <input id="skills-input" name="skills" value="{{ params.skills|join:','|default:'' }}" placeholder="e.g. Python, AWS, Docker" value='php,python' />
+    </div>
+    <div class="form-row">
+      <label>Titles<span style="color:red">*</span></label>
+      <input type="text" name="titles" value="{{ params.titles|join:','|default:'' }}" placeholder="e.g. Software Engineer, DevOps" required />
+    </div>
+    <div class="form-row">
+      <label>Exclude Skills</label>
+      <input id="ex-skills-input" type="text" name="exclude-skills" value="{{ params.ex_skills|join:','|default:'' }}" placeholder="e.g. PHP, Ruby" />
+    </div>
+    <div class="form-row">
+      <label>Exclude Keywords</label>
+      <input type="text" name="exclude-keywords" value="{{ params.ex_keywords|join:','|default:'' }}" placeholder="e.g. junior, unpaid" />
+    </div>
+    <div class="form-row">
+      <label>State</label>
+      <input type="text" id="states-input" name="state" value="{{ params.state|default:'' }}" placeholder="e.g. MA, CA, TX" />
+
+    </div>
+    <div class="form-row checkbox-row">
+      <input type="checkbox" name="is-remote" id="is-remote" />
+      <label for="is-remote">Remote only</label>
+    </div>
+    <div class="form-row">
+      <label>Days Old</label>
+      <input type="number" name="days-old" min="0" placeholder="e.g. 7" value="{{ params.days|default:'14' }}" />
+    </div>
+    <button type="submit" class="search-btn">Search</button>
+  </form>
+
+    {% if total > 0 %}
+    <div class="results-count">
+        Showing <strong>{{ size }}</strong> of <strong>{{ total }}</strong> results
+    </div>
+    {% endif %}
+
+    <div class="results">
+        {% for job in jobs %}
+            <div class="result-card">
+
+                <div class="result-header">
+                    <h3 class="result-title">{{job.title }}</h3>
+                    <span class="result-date">Posted: {{ job.published_at }}</span>
+                 </div>
+
+                  <p class="result-company">at <strong>{{ job.company }}</strong></p>
+                  <p class="result-description">{{ job.description|slice:":500" }}</p>
+                  <div class="result-skills">
+                      {% for sk in job.skills %}
+                        <span class="skill">{{ sk }}</span>
+                    {% endfor %}
+                 </div>
+
+                <a target="_blank" class="result-link" href="{{ job.url}}">View more →</a>
             </div>
         {% endfor %}
+    </div>
 </div>
 {% endblock %}

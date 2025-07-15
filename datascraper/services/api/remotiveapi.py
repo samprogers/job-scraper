@@ -1,7 +1,7 @@
 import json, requests
-from datascraper.models import Vendor
+from datascraper.models import Vendor, Skill
 import sys,datetime,dateutil
-from datascraper.services.parser.countryparser import CountryParser
+from datascraper.services.parser.stringextracter import StringExtracter
 from datascraper.util.formattedjobposting import FormattedJobPosting
 
 class RemotiveApi:
@@ -14,10 +14,12 @@ class RemotiveApi:
     def getFormattedJobs(self):
 
         jobs = []
-        parser = CountryParser()
+        parser = StringExtracter()
         url = f"https://remotive.com/api/remote-jobs"
         r = requests.get(url)
         content = r.json()
+
+        all_skills = []
 
         for job in content['jobs']:
             url = job['url']
@@ -50,7 +52,25 @@ class RemotiveApi:
                 is_hybrid=parser.isHybrid(location) if location is not None else False
             )
 
+            if len(languages) > 0:
+                all_skills.extend(languages)
+                formatted.skills = languages
+
             jobs.append(formatted)
 
         #filter by USA or worldwide
+        #for sk in all_skills:
+        #    exist = Skill.objects.filter(slug=sk).exists()
+        #    if not exist:
+        #        new = Skill(
+        #            slug=sk,
+        #            name=sk,
+        #            category="Programming Language",
+        #            subcategory="General-Purpose",
+        #            libraries=""
+        #        )
+        #        print(sk)
+        #        new.save()
+
+
         return jobs

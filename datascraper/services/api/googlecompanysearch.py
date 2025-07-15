@@ -3,9 +3,9 @@ import sys
 from django.conf import settings
 from serpapi import GoogleSearch
 import requests, urllib, dateparser
-from datascraper.services.parser.companyhtmlparser import CompanyHTMLParser
+from datascraper.services.parser.htmlparser import HTMLParser
 from datascraper.models import Vendor
-from datascraper.services.parser.countryparser import CountryParser
+from datascraper.services.parser.stringextracter import StringExtracter
 from datascraper.util.formattedjobposting import FormattedJobPosting
 
 class CompanyGoogleSearch:
@@ -51,7 +51,7 @@ class CompanyGoogleSearch:
 
     def getJobs(self, queries):
         jobs = []
-        parser = CountryParser()
+        parser = StringExtracter()
 
         for query in queries:
             print(query)
@@ -75,6 +75,7 @@ class CompanyGoogleSearch:
                     is_usa = parser.isLocationInUSA(location) if location is not None else True
                     state = parser.getState(location) if location is not None else None
                     is_remote = True if parser.isRemote(location) or parser.isRemote(title) else False
+                    skills = parser.getSkills(content) if content is not None else ""
 
                     if published_at is not None:
                         published_at = dateparser.parse(published_at)
@@ -92,12 +93,12 @@ class CompanyGoogleSearch:
                         state=state,
                         is_usa=is_usa,
                         is_remote=is_remote,
+                        skills=skills
                     )
 
                     if is_usa:
                         jobs.append(formatted)
                         print(len(jobs))
-
 
         return jobs
 
@@ -168,7 +169,7 @@ class CompanyGoogleSearch:
                     current_list.append(company)
 
                 elif split_path[0] == "embed":
-                    parser = CompanyHTMLParser()
+                    parser = HTMLParser()
                     rsp = requests.get(link)
                     company = parser.getCompanyName(rsp.content)
                     if company is not None:
